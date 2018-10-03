@@ -21,6 +21,7 @@ __version__ = "2.0"
 from optparse import OptionParser, TitledHelpFormatter
 import random, sys, re, types
 import sre_constants
+import random
 
 colorcode = {'red':chr(27)+'[31m', 'green':chr(27)+'[32m', 'yellow':chr(27)+'[33m',
              'blue':chr(27)+'[34m', 'magenta':chr(27)+'[35m', 'cyan':chr(27)+'[36m',
@@ -29,12 +30,26 @@ colorcode = {'red':chr(27)+'[31m', 'green':chr(27)+'[32m', 'yellow':chr(27)+'[33
              'blink':chr(27)+'[5m', 'bold':chr(27)+'[1m', 'undrln' : chr(27)+'[4m',
              'reset':chr(27)+'[0m'}
 
+default_colors = ['red','green','yellow','blue','magenta','cyan']
+random.shuffle(default_colors)
+
 def colorise(line, regexp, tx_list, options):
     def get_colorised_value(matchobj):
         return tx_list[matchobj.lastindex - 1] + matchobj.group() + colorcode['reset']
     if options['bisounours']:
         color = random.choice(colorcode.keys())
         return line.replace(line,  colorcode[color] + line.rstrip() + colorcode['reset']).rstrip()
+    elif options['bycol']:
+        sep = options['bycol']
+        aline = line.rstrip().split(sep)
+        colors_num = len(aline)
+        for i in range(colors_num):
+            if colors_num > 1:
+                color = default_colors[i%colors_num]
+            else:
+                color = default_colors[0]
+            aline[i] = colorcode[color] + aline[i] + colorcode['reset']
+        return line.replace(line,  sep.join(aline)).rstrip()
     else:
         return regexp.sub(get_colorised_value, line).rstrip()
 
@@ -73,13 +88,14 @@ def option_parse():
     parser.add_option("-D", "--bold", action="append", dest="bold", help="display BOLD pattern in bold")
     parser.add_option("-u", "--undrln", action="append", dest="undrln", help="display UNDRLN pattern underlined")
     parser.add_option("-N", "--bisounours", action="store_true", dest="bisounours", default=False, help="display with random colors")
+    parser.add_option("-x", "--bycol", action="store", type="string", dest="bycol", default=False, help="display with random column colors by delimiter")
     return parser.parse_args()
 
 def main():
     (options_instance, args) = option_parse()
     options = options_instance.__dict__
     tx_dict = create_tx_dict(options)
-    if not tx_dict and not options['bisounours']:
+    if not tx_dict and not options['bisounours'] and not options['bycol']:
         sys.stderr.write("nothing to do :-(\ntry --help\n")
         sys.exit(0)
     regexp = re.compile('|'.join(tx_dict))

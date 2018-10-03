@@ -49,6 +49,7 @@ Options
 --bold=BOLD, -D BOLD              display BOLD pattern in bold
 --undrln=UNDRLN, -u UNDRLN        display UNDRLN pattern underlined
 --bisounours, -N                  display with random colors
+--bycol, -x DELIM                 display with random column colors by delimiter
 
 Regular expressions are interpreted, so if you want to match a '*' or a '[' or any element of the regexp grammar
 you have to escape it with a backslash.
